@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "bybit-manager-kyc-tg-bot"
+version = "0.1.0"
+description = "kyc bybit tg bot for bybit-manager"
+authors = ["Alen <alen.kimov@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+aiohttp = "^3.11.11"
+aiogram = "^3.16.0"
+tzlocal = "^5.2"
+httpx = "^0.28.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
