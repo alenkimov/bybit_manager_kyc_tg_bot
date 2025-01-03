@@ -13,8 +13,6 @@ from bot.utils.proccess_account import process_account, proccess_bad
 
 router = Router()
 
-chat_data = {}
-
 
 def callback(button):
     return keyboards.link_buttons[button]["callback_data"]
@@ -32,24 +30,24 @@ async def menu_handler(msg: Message):
 
 @router.message(F.text == keyboards.texts["links"])
 async def get_links_handler(msg: Message, state: FSMContext):
-    await query_count(msg, chat_data, state)
+    await query_count(msg, state)
 
 
 @router.message(UserState.count)
 async def setting_count(msg: Message, state: FSMContext):
-    await set_count(msg, chat_data, state)
+    await set_count(msg, state)
 
 
 @router.callback_query(F.data.startswith(callback("CHECK")))
 async def check_handler(callback_query: types.CallbackQuery):
-    await process_account(callback_query, chat_data)
+    await process_account(callback_query)
 
 
 @router.callback_query(F.data.startswith(callback("REFRESH")))
 async def check_handler(callback_query: types.CallbackQuery):
-    await process_account(callback_query, chat_data, update_link=True)
+    await process_account(callback_query, update_link=True)
 
 
 @router.callback_query(F.data.startswith(callback("BAD")))
 async def check_handler(callback_query: types.CallbackQuery):
-    await proccess_bad(callback_query, chat_data)
+    await proccess_bad(callback_query)

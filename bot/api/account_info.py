@@ -7,4 +7,8 @@ def account_info(id):
     if response.status_code != httpx.codes.OK:
         raise Exception("Error while getting account" + id)
     info = response.json()
+
+    if not "database_id" in info:  # Изменилась схема
+        info["database_id"] = id
+
     return info

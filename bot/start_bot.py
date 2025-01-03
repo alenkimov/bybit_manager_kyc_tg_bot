@@ -1,5 +1,6 @@
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
+from aiogram.utils.token import TokenValidationError
 
 
 from bot.handlers import router
