@@ -1,8 +1,11 @@
 from bot.utils.get_data import get_data
+from APIClient.dto.account_dto import AccountDto
 import time
 
+COOLDOWN_SEC = 600
 
-def check_account(account, chat_id):
+
+def check_account(account: AccountDto, chat_id):
     return (
         check_status(account)
         and check_db(account, chat_id)
@@ -10,27 +13,23 @@ def check_account(account, chat_id):
     )
 
 
-def check_cooldown(account, chat_id):
+def check_cooldown(account: AccountDto, chat_id):
     current_time = time.time()
-    db_id = str(account["database_id"])
-
-    print(get_data(chat_id)["delayed"].keys())
-    if db_id in get_data(chat_id)["delayed"].keys():
-        print(current_time - get_data(chat_id)["delayed"][db_id])
+    db_id = str(account.get_id())
 
     return not (
         db_id in get_data(chat_id)["delayed"].keys()
-        and current_time - get_data(chat_id)["delayed"][db_id] < 600
+        and current_time - get_data(chat_id)["delayed"][db_id] < COOLDOWN_SEC
     )
 
 
-def check_db(account, chat_id):
-    dbId = str(account["database_id"])
+def check_db(account: AccountDto, chat_id):
+    dbId = str(account.get_id())
     return not dbId in get_data(chat_id)["bad"]
 
 
-def check_status(account):
+def check_status(account: AccountDto):
     return (
-        account["state"][0]["status"] == "ALLOW"
-        or account["state"][0]["status"] == "FAILED_AND_CAN_RETRY"
+        account.get_status() == "ALLOW"
+        or account.get_status() == "FAILED_AND_CAN_RETRY"
     )

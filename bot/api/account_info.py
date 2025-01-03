@@ -1,14 +1,19 @@
 import httpx
-from bot.api.server_config import get_endpoint
+from APIClient.client import Client
+from APIClient.dto.account_dto import AccountDto
 
 
-def account_info(id):
-    response = httpx.post(get_endpoint("accInfo", id=id))
-    if response.status_code != httpx.codes.OK:
-        raise Exception("Error while getting account" + id)
-    info = response.json()
+def account_info(id) -> AccountDto:
+    response = Client.account_info(id)
+    account = AccountDto(response)
 
-    if not "database_id" in info:  # Изменилась схема
-        info["database_id"] = id
+    # response = httpx.post(get_endpoint("accInfo", id=id))
+    # if response.status_code != httpx.codes.OK:
+    #     raise Exception("Error while getting account" + id)
+    # info = response.json()
 
-    return info
+    # if not "database_id" in info:  # Изменилась схема
+    #     info["database_id"] = id
+    # return info
+
+    return account

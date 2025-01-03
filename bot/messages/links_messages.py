@@ -32,7 +32,7 @@ async def query_count(msg: types.Message, state: FSMContext):
 
         get_data(chat_id)["accounts"] = {}
         for account in accounts:
-            dbId = str(account["database_id"])
+            dbId = str(account.get_id())
 
             get_data(chat_id)["accounts"][dbId] = {"account": account}
 

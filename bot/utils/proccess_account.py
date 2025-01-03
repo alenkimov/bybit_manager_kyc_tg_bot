@@ -5,6 +5,7 @@ from bot.messages.message_parser import stringify_notallow_message, stringify_me
 from bot.api.account_link import account_link
 from bot.api.mark_bad import mark_bad
 import bot.keyboards as keyboards
+from APIClient.dto.account_dto import AccountDto
 
 
 """Обработать изменение аккаунта (CHECK/REFRESH)."""
@@ -18,7 +19,8 @@ async def process_account(callback_query: types.CallbackQuery, update_link=False
     try:
         account = account_info(db_id)
         get_data(chat_id)["accounts"][db_id]["account"] = account
-        status = account["state"][0]["status"]
+
+        status = account.get_status()
 
         if status != "ALLOW" and status != "FAILED_AND_CAN_RETRY":
             await message.edit_text(
@@ -53,9 +55,9 @@ async def proccess_bad(callback_query: types.CallbackQuery):
     db_id = callback_query.data.split(":")[1]
     message = callback_query.message
     chat_id = message.chat.id
-    account = get_data(chat_id)["accounts"][db_id]["account"]
+    account: AccountDto = get_data(chat_id)["accounts"][db_id]["account"]
 
-    account["state"][0]["status"] = "BAD"
+    account.set_status("BAD")
     mark_bad(db_id, chat_id=chat_id)  # Сохраняем
 
     await message.edit_text(
