@@ -20,7 +20,7 @@ def check_cooldown(account, chat_id):
 
     return not (
         db_id in get_data(chat_id)["delayed"].keys()
-        and current_time - get_data(chat_id)["delayed"][db_id] < 60
+        and current_time - get_data(chat_id)["delayed"][db_id] < 600
     )
 
 
