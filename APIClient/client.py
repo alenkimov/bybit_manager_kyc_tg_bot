@@ -22,7 +22,7 @@ class APIClient:
 
     def _request(self, url, method="GET", params=None, data=None):
 
-        response = ""
+        response = None
         if method == "POST":
             response = httpx.post(url, params=params, data=data)
         else:

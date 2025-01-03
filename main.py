@@ -1,10 +1,13 @@
 import asyncio
 import logging
 from bot.start_bot import start_bot
-import conf
 
+try:
+    from conf import API_KEY
+except ImportError:
+    API_KEY = None
 
-API_KEY = conf.API_KEY or ""
+API_KEY = API_KEY or ""
 
 
 if __name__ == "__main__":
