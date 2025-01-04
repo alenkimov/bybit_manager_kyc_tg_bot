@@ -20,24 +20,21 @@ class APIClient:
     def __init__(self, base_url):
         self.base_url = base_url or BASE_URL
 
-    def _request(self, url, method="GET", params=None, data=None):
-
-        response = None
-        if method == "POST":
-            response = httpx.post(url, params=params, data=data)
-        else:
-            response = httpx.get(url, params=params)
-
+    def _request(self, method: str, url: str, **kwargs) -> str | dict | list:
+        response = httpx.request(method, url, **kwargs)
         if response.status_code != httpx.codes.OK:
             raise Exception(f"API Error: {response.status_code}, {response.text}")
 
         return response.json()
 
+    def post(self, url: str, **kwargs):
+        raise self._request("POST", url, **kwargs)
+
     def account_info(self, id: int):
         url = self.base_url + get_endpoint("account_info", id=id)
-        response = self._request(url, method="POST")
+        response = self.post(url)
 
-        if not "database_id" in response:  # Изменилась схема
+        if "database_id" not in response:  # Изменилась схема
             response["database_id"] = id
 
         return response

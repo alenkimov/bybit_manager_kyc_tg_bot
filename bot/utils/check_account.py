@@ -1,6 +1,8 @@
-from bot.utils.get_data import get_data
-from APIClient.dto.account_dto import AccountDto
 import time
+
+from bot.utils.get_data import get_data
+from api_client.dto.account_dto import AccountDto
+
 
 COOLDOWN_SEC = 600
 

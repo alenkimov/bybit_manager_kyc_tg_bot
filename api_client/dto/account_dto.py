@@ -1,8 +1,7 @@
-from typing import Dict
 import copy
 
 
-class AccountDto(Dict):
+class AccountDto:
     def __init__(self, apiAccount):
         self.data = copy.deepcopy(apiAccount)
 

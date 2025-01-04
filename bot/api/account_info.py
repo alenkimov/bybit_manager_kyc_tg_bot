@@ -1,6 +1,6 @@
 import httpx
-from APIClient.client import Client
-from APIClient.dto.account_dto import AccountDto
+from api_client.client import Client
+from api_client.dto.account_dto import AccountDto
 
 
 def account_info(id) -> AccountDto:
