@@ -5,7 +5,7 @@ from bot.messages.message_parser import stringify_notallow_message, stringify_me
 from bot.api.account_link import account_link
 from bot.api.mark_bad import mark_bad
 import bot.keyboards as keyboards
-from APIClient.dto.account_dto import AccountDto
+from api_client.dto.account_dto import AccountDto
 
 
 """Обработать изменение аккаунта (CHECK/REFRESH)."""

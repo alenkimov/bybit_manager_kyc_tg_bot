@@ -15,7 +15,7 @@ router = Router()
 
 
 def callback(button):
-    return keyboards.link_buttons[button]["callback_data"]
+    return keyboards.LINK_BUTTONS[button]["callback_data"]
 
 
 @router.message(Command("start"))
@@ -23,12 +23,12 @@ async def start_handler(msg: Message):
     await send_start_message(msg)
 
 
-@router.message(F.text == keyboards.texts["menu"])
+@router.message(F.text == keyboards.TEXTS["menu"])
 async def menu_handler(msg: Message):
     await send_start_message(msg)
 
 
-@router.message(F.text == keyboards.texts["links"])
+@router.message(F.text == keyboards.TEXTS["links"])
 async def get_links_handler(msg: Message, state: FSMContext):
     await query_count(msg, state)
 

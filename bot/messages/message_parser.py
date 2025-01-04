@@ -1,8 +1,9 @@
 from bot.utils.time_diff import time_diff
-from APIClient.dto.account_dto import AccountDto
+
+from api_client.dto.account_dto import AccountDto
 
 
-def stringify_message(account: AccountDto, link):
+def stringify_message(account: AccountDto, link: dict):
     minutes, seconds = time_diff(link["expired_at"])
 
     if minutes < 0 or seconds < 0:

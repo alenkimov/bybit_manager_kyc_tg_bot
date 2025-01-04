@@ -2,10 +2,10 @@ import httpx
 from bot.api.server_config import get_endpoint
 
 
-def ids_by_tg_provider(username):
+def ids_by_tg_provider(username: str):
     response = httpx.get(get_endpoint("IdsByProvider", nickname=username))
     if response.status_code != httpx.codes.OK:
-        raise Exception("Error while getting accounts")
+        raise Exception(f"Error while getting accounts! Status code {response.status_code}")
     ids = response.json()
 
     if "database_ids" not in ids:

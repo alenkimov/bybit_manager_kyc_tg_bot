@@ -1,11 +1,14 @@
+import time
+
 from typing import Callable, Awaitable
 
 from aiogram import types
 from aiogram.fsm.context import FSMContext
-import time
 
+import bot.keyboards as keyboards
 from bot.utils.get_accounts_by_provider import get_accounts_by_provider
 from bot.utils.get_data import get_data
+from bot.model.state import UserState
 from bot.messages.message_parser import stringify_message
 from APIClient.dto.account_dto import AccountDto
 from bot.messages.start_message import send_start_message
@@ -72,8 +75,7 @@ async def query_count(msg: types.Message, state: FSMContext):
 
 async def set_count(msg: types.Message, state: FSMContext):
     chat_id = msg.chat.id
-
-    if msg.text == keyboards.texts["menu"]:  # Выход из состояния
+    if msg.text == keyboards.TEXTS["menu"]:  # Выход из состояния
         await state.clear()
         await send_start_message(msg)
 
