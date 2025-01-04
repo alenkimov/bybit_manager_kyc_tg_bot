@@ -1,11 +1,14 @@
 import httpx
 
+from .dto.account_dto import AccountDto
+from .dto.sumsub_url_dto import SumsubUrlDto
+
 BASE_URL = "http://127.0.0.1:8000/"
 
 ENDPOINTS = {
     "ids_by_provider": "get_kyc_provider_database_ids/{nickname}",
-    "account_info": "private/{id}/kyc_info?obtain_current=false&obtain_kyc_token=false&obtain_quotas=false&obtain_state=true&obtain_verification_process=false&obtain_aml_questionnaire=true&submit_kyc_questionnaire=true&set_kyc_complete_time=false",
-    "sumsub_link": "private/{id}/sumsub_kyc_url",
+    "account_info": "private/{database_id}/kyc_info?obtain_current=false&obtain_kyc_token=false&obtain_quotas=false&obtain_state=true&obtain_verification_process=false&obtain_aml_questionnaire=true&submit_kyc_questionnaire=true&set_kyc_complete_time=false",
+    "sumsub_link": "private/{database_id}/sumsub_kyc_url",
 }
 
 
@@ -33,14 +36,20 @@ class APIClient:
 
         return response.json()
 
-    def account_info(self, id: int):
-        url = self.base_url + get_endpoint("account_info", id=id)
+    def account_info(self, database_id: int) -> AccountDto:
+        url = self.base_url + get_endpoint("account_info", database_id=database_id)
         response = self._request(url, method="POST")
 
         if not "database_id" in response:  # Изменилась схема
-            response["database_id"] = id
+            response["database_id"] = database_id
 
         return response
+
+    def account_link(self, database_id: int) -> SumsubUrlDto:
+        url = self.base_url + get_endpoint(
+            "sumsub_link", method="POST", database_id=database_id
+        )
+        return self._request(url)
 
 
 Client = APIClient(BASE_URL)

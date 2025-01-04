@@ -1,10 +1,8 @@
 import httpx
+from APIClient.client import Client
 from bot.api.server_config import get_endpoint
 
 
-def account_link(id):
-    response = httpx.post(get_endpoint("accLink", id=id))
-    if response.status_code != httpx.codes.OK:
-        raise Exception("Error while getting account" + id)
-    info = response.json()
-    return info
+def account_link(database_id: int):
+    response = Client.account_link(database_id)
+    return response

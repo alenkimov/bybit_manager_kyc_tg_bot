@@ -8,8 +8,9 @@ from APIClient.dto.account_dto import AccountDto
 def get_accounts_by_provider(msg: Message) -> list[AccountDto]:
     ids = ids_by_tg_provider(msg.from_user.username)
     accounts = []
-    for id in ids:
-        account = account_info(id)
+
+    for database_id in ids:
+        account = account_info(database_id)
 
         if check_account(account, msg.chat.id):
             accounts.append(account)

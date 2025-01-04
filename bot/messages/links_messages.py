@@ -1,44 +1,59 @@
+from typing import Callable, Awaitable
+
 from aiogram import types
 from aiogram.fsm.context import FSMContext
 import time
 
 from bot.utils.get_accounts_by_provider import get_accounts_by_provider
 from bot.utils.get_data import get_data
-
+from bot.messages.message_parser import stringify_message
+from APIClient.dto.account_dto import AccountDto
+from bot.messages.start_message import send_start_message
+from bot.api.account_link import account_link
 from bot.model.state import UserState
-
 import bot.keyboards as keyboards
 
-from bot.messages.message_parser import stringify_message
-from bot.messages.start_message import send_start_message
 
-from bot.api.account_link import account_link
+async def send_loading_message(
+    text: str, msg: types.Message
+) -> Callable[[], Awaitable[None]]:
+    loading_messaage = await msg.answer(text, reply_markup=types.ReplyKeyboardRemove())
+
+    async def delete_loading_message():
+        if loading_messaage:
+            await loading_messaage.delete()
+
+    return delete_loading_message
+
+
+async def handle_no_accounts(msg: types.Message):
+    await msg.answer("Sorry, currently no accounts available. Try again later.")
+    await send_start_message(msg)
+
+
+def update_accounts_data(chat_id: int, accounts: list[AccountDto]):
+    get_data(chat_id)["accounts"] = {}  # Очищение памяти
+    for account in accounts:
+        dbId = str(account.get_id())
+
+        get_data(chat_id)["accounts"][dbId] = {"account": account}
 
 
 async def query_count(msg: types.Message, state: FSMContext):
     chat_id = msg.chat.id
-    answer = await msg.answer(
-        "Fetching accounts...", reply_markup=types.ReplyKeyboardRemove()
-    )
+
+    delete_loading_message = await send_loading_message("Fetching accounts...", msg)
+
     try:
         accounts = get_accounts_by_provider(msg)
 
-        if not len(accounts):
-            await msg.answer(
-                "Sorry, currently no accounts available. Try again later.",
-            )
-            await send_start_message(msg)
+        if not accounts:
+            await handle_no_accounts(msg)
             return
 
-        get_data(chat_id)["accounts"] = {}
-        for account in accounts:
-            dbId = str(account.get_id())
+        update_accounts_data(chat_id, accounts)
 
-            get_data(chat_id)["accounts"][dbId] = {"account": account}
-
-        await msg.answer(
-            f"Count of currently available accounts: {len(get_data(chat_id)['accounts'])}."
-        )
+        await msg.answer(f"Count of currently available accounts: {len(accounts)}.")
         await state.set_state(UserState.count)
         await msg.answer(
             "Specify how many accounts you want to process",
@@ -52,12 +67,12 @@ async def query_count(msg: types.Message, state: FSMContext):
         await send_start_message(msg)
 
     finally:
-        if answer:
-            await answer.delete()
+        await delete_loading_message()
 
 
 async def set_count(msg: types.Message, state: FSMContext):
     chat_id = msg.chat.id
+
     if msg.text == keyboards.texts["menu"]:  # Выход из состояния
         await state.clear()
         await send_start_message(msg)
@@ -71,13 +86,15 @@ async def set_count(msg: types.Message, state: FSMContext):
 
     else:
         ready_accounts = get_data(chat_id)["accounts"]
+
         validated_count = (
             len(ready_accounts)
             if int(msg.text) > len(ready_accounts)
             else int(msg.text)
         )
         await state.update_data(count=validated_count)
-        loading_answer = await msg.answer("Preparing links...")
+
+        delete_loading_message = await send_loading_message("Preparing links...", msg)
 
         try:
             for i, (db_id, account) in enumerate(ready_accounts.items()):
@@ -85,8 +102,11 @@ async def set_count(msg: types.Message, state: FSMContext):
                     break
 
                 response = account_link(db_id)
-                get_data(chat_id)["accounts"][db_id]["link"] = response
-                get_data(chat_id)["delayed"][db_id] = time.time()
+                chat = get_data(chat_id)
+
+                chat["accounts"][db_id]["link"] = response
+                chat["delayed"][db_id] = time.time()
+
                 await msg.answer(
                     stringify_message(account["account"], response),
                     reply_markup=keyboards.create_link_keyboard(db_id),
@@ -99,5 +119,5 @@ async def set_count(msg: types.Message, state: FSMContext):
             await send_start_message(msg)
 
         finally:
-            await loading_answer.delete()
+            await delete_loading_message()
             await state.clear()
