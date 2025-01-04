@@ -55,7 +55,7 @@ async def proccess_bad(callback_query: types.CallbackQuery):
     db_id = callback_query.data.split(":")[1]
     message = callback_query.message
     chat_id = message.chat.id
-    account: AccountDto = get_data(chat_id)["accounts"][db_id]["account"]
+    account = get_data(chat_id)["accounts"][db_id]["account"]
 
     account.set_status("BAD")
     mark_bad(db_id, chat_id=chat_id)  # Сохраняем

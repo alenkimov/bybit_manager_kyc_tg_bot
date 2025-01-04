@@ -1,19 +1,13 @@
-from aiogram.types import Message
-
-from bot.api.accounts_list import ids_by_tg_provider
-from bot.api.account_info import account_info
-from bot.utils.check_account import check_account
-from api_client.dto.account_dto import AccountDto
+from bot.api.accounts_list import accounts_by_tg_provider
+from api_client.dto.accounts_by_telegram_dto import AccountByKycProviderDto
 
 
-def get_accounts_by_provider(msg: Message) -> list[AccountDto]:
-    ids = ids_by_tg_provider(msg.from_user.username)
-    accounts = []
+def get_accounts_by_provider(telegram_username: str) -> list[AccountByKycProviderDto]:
+    accounts: list[AccountByKycProviderDto] = accounts_by_tg_provider(telegram_username)
 
-    for database_id in ids:
-        account = account_info(database_id)
+    def check_account(account: AccountByKycProviderDto):
+        return account.is_kyc_allowed()
 
-        if check_account(account, msg.chat.id):
-            accounts.append(account)
+    allowed_to_kyc = list(filter(check_account, accounts))
 
-    return accounts
+    return allowed_to_kyc

@@ -1,19 +1,19 @@
-import time
-
 from typing import Callable, Awaitable
+import time
 
 from aiogram import types
 from aiogram.fsm.context import FSMContext
 
-import bot.keyboards as keyboards
 from bot.utils.get_accounts_by_provider import get_accounts_by_provider
 from bot.utils.get_data import get_data
 from bot.model.state import UserState
-from bot.messages.message_parser import stringify_message
-from APIClient.dto.account_dto import AccountDto
-from bot.messages.start_message import send_start_message
-from bot.api.account_link import account_link
 from bot.model.state import UserState
+from bot.api.account_info import account_info
+from bot.api.account_link import account_link
+from api_client.dto.accounts_by_telegram_dto import AccountByKycProviderDto
+from .start_message import send_start_message
+from .message_parser import stringify_message
+from .message_parser import stringify_notallow_message
 import bot.keyboards as keyboards
 
 
@@ -34,7 +34,7 @@ async def handle_no_accounts(msg: types.Message):
     await send_start_message(msg)
 
 
-def update_accounts_data(chat_id: int, accounts: list[AccountDto]):
+def update_accounts_data(chat_id: int, accounts: list[AccountByKycProviderDto]):
     get_data(chat_id)["accounts"] = {}  # Очищение памяти
     for account in accounts:
         dbId = str(account.get_id())
@@ -42,21 +42,36 @@ def update_accounts_data(chat_id: int, accounts: list[AccountDto]):
         get_data(chat_id)["accounts"][dbId] = {"account": account}
 
 
+def filter_accounts(
+    accounts: list[AccountByKycProviderDto], chat_data: dict
+) -> list[AccountByKycProviderDto]:
+    return [
+        account
+        for account in accounts
+        if str(account.get_id()) not in chat_data["delayed"]
+        and str(account.get_id()) not in chat_data["bad"]
+    ]
+
+
 async def query_count(msg: types.Message, state: FSMContext):
     chat_id = msg.chat.id
-
     delete_loading_message = await send_loading_message("Fetching accounts...", msg)
 
     try:
-        accounts = get_accounts_by_provider(msg)
+        accounts = get_accounts_by_provider(msg.from_user.username)
+        chat_data = get_data(chat_id)
 
-        if not accounts:
+        filtered_accounts = filter_accounts(accounts, chat_data)
+
+        if not filtered_accounts:
             await handle_no_accounts(msg)
             return
 
-        update_accounts_data(chat_id, accounts)
+        update_accounts_data(chat_id, filtered_accounts)
 
-        await msg.answer(f"Count of currently available accounts: {len(accounts)}.")
+        await msg.answer(
+            f"Count of currently available accounts: {len(filtered_accounts)}."
+        )
         await state.set_state(UserState.count)
         await msg.answer(
             "Specify how many accounts you want to process",
@@ -74,7 +89,6 @@ async def query_count(msg: types.Message, state: FSMContext):
 
 
 async def set_count(msg: types.Message, state: FSMContext):
-    chat_id = msg.chat.id
     if msg.text == keyboards.TEXTS["menu"]:  # Выход из состояния
         await state.clear()
         await send_start_message(msg)
@@ -87,13 +101,11 @@ async def set_count(msg: types.Message, state: FSMContext):
         )
 
     else:
-        ready_accounts = get_data(chat_id)["accounts"]
+        chat_id = msg.chat.id
+        chat_data = get_data(chat_id)
+        ready_accounts = chat_data["accounts"]
 
-        validated_count = (
-            len(ready_accounts)
-            if int(msg.text) > len(ready_accounts)
-            else int(msg.text)
-        )
+        validated_count = min(len(ready_accounts), int(msg.text))
         await state.update_data(count=validated_count)
 
         delete_loading_message = await send_loading_message("Preparing links...", msg)
@@ -103,16 +115,20 @@ async def set_count(msg: types.Message, state: FSMContext):
                 if i >= validated_count:
                     break
 
-                response = account_link(db_id)
-                chat = get_data(chat_id)
+                updated_account = account_info(db_id)
 
-                chat["accounts"][db_id]["link"] = response
-                chat["delayed"][db_id] = time.time()
+                if updated_account.is_kyc_allowed():
+                    response = account_link(db_id)
+                    chat_data["accounts"][db_id]["link"] = response
+                    chat_data["delayed"][db_id] = time.time()
 
-                await msg.answer(
-                    stringify_message(account["account"], response),
-                    reply_markup=keyboards.create_link_keyboard(db_id),
-                )
+                    await msg.answer(
+                        stringify_message(updated_account, response),
+                        reply_markup=keyboards.create_link_keyboard(db_id),
+                    )
+
+                else:
+                    await msg.answer(stringify_notallow_message(updated_account))
 
         except Exception as e:
             await msg.answer(

@@ -1,8 +1,7 @@
-import httpx
-from APIClient.client import Client
-from bot.api.server_config import get_endpoint
+from api_client.dto.sumsub_url_dto import SumsubUrlDto
+from api_client.client import Client
 
 
 def account_link(database_id: int):
     response = Client.account_link(database_id)
-    return response
+    return SumsubUrlDto(response)
