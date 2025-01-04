@@ -117,18 +117,18 @@ async def set_count(msg: types.Message, state: FSMContext):
 
                 updated_account = account_info(db_id)
 
-                if updated_account.is_kyc_allowed():
-                    response = account_link(db_id)
-                    chat_data["accounts"][db_id]["link"] = response
-                    chat_data["delayed"][db_id] = time.time()
-
-                    await msg.answer(
-                        stringify_message(updated_account, response),
-                        reply_markup=keyboards.create_link_keyboard(db_id),
-                    )
-
-                else:
+                if not updated_account.is_kyc_allowed():
                     await msg.answer(stringify_notallow_message(updated_account))
+                    break
+
+                response = account_link(db_id)
+                chat_data["accounts"][db_id]["link"] = response
+                chat_data["delayed"][db_id] = time.time()
+
+                await msg.answer(
+                    stringify_message(updated_account, response),
+                    reply_markup=keyboards.create_link_keyboard(db_id),
+                )
 
         except Exception as e:
             await msg.answer(
