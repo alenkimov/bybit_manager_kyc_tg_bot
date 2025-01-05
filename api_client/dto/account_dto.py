@@ -3,6 +3,7 @@ import copy
 
 class AccountDto:
     def __init__(self, apiAccount):
+        # TODO: Доделать норм схему
         self.data = copy.deepcopy(apiAccount)
 
     def get_status(self) -> str:

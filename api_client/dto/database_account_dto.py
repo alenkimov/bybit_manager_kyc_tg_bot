@@ -1,18 +1,9 @@
 import copy
 
 
-class AccountsListDto:
-    def __init__(self, api_accounts):
-        accounts: list[AccountByKycProviderDto] = []
-
-        for account in api_accounts:
-            accounts.append(AccountByKycProviderDto(account))
-
-        self.data = accounts
-
-
-class AccountByKycProviderDto:
+class DatabaseAccountDto:
     def __init__(self, account):
+        # TODO: Доделать норм схему
         self.data = copy.deepcopy(account)
 
     def get_status(self) -> str:

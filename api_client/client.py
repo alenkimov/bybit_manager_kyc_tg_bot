@@ -1,3 +1,4 @@
+from os import access
 import httpx
 from .dto.account_dto import AccountDto
 from .dto.sumsub_url_dto import SumsubUrlDto
@@ -46,12 +47,12 @@ class APIClient:
         url = self.base_url + get_endpoint("account_info", database_id=database_id)
         response = self.post(url)
 
-        if "database_id" not in response:  # Изменилась схема
-            response["database_id"] = database_id
+        # Норм решение?
+        response["database_id"] = database_id  # type: ignore
 
         return response
 
-    def account_link(self, databse_id: int):
+    def subsub_url(self, databse_id: int):
         url = self.base_url + get_endpoint("sumsub_link", database_id=databse_id)
         response = self.post(url)
 

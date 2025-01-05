@@ -3,6 +3,7 @@ import copy
 
 class SumsubUrlDto:
     def __init__(self, api_link):
+        # TODO: Доделать норм схему
         self.data = copy.deepcopy(api_link)
 
     def get_url(self) -> str:

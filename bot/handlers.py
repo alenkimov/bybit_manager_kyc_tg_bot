@@ -5,7 +5,8 @@ from aiogram.fsm.context import FSMContext
 
 from bot.model.state import UserState
 import bot.keyboards as keyboards
-from bot.messages.links_messages import query_count, set_count
+from bot.messages.links_messages import query_count
+from bot.messages.send_links import send_links
 from bot.messages.start_message import send_start_message
 
 from bot.utils.proccess_account import process_account, proccess_bad
@@ -35,7 +36,7 @@ async def get_links_handler(msg: Message, state: FSMContext):
 
 @router.message(UserState.count)
 async def setting_count(msg: Message, state: FSMContext):
-    await set_count(msg, state)
+    await send_links(msg, state)
 
 
 @router.callback_query(F.data.startswith(callback("CHECK")))
@@ -44,10 +45,10 @@ async def check_handler(callback_query: types.CallbackQuery):
 
 
 @router.callback_query(F.data.startswith(callback("REFRESH")))
-async def check_handler(callback_query: types.CallbackQuery):
+async def refresh_handler(callback_query: types.CallbackQuery):
     await process_account(callback_query, update_link=True)
 
 
 @router.callback_query(F.data.startswith(callback("BAD")))
-async def check_handler(callback_query: types.CallbackQuery):
+async def bad_handler(callback_query: types.CallbackQuery):
     await proccess_bad(callback_query)
