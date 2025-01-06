@@ -1,21 +1,19 @@
 import time
-from typing import TypeVar
-
+from typing import Sequence
 from api_client.dto.account_dto import AccountDto
-from api_client.dto.database_account_dto import DatabaseAccountDto
 from bot.model.chat_data import ChatDataEntry
 
 
 COOLDOWN_SEC = 600
 
-T = TypeVar("T", bound=AccountDto | DatabaseAccountDto)
 
-
-def filter_accounts(chat_data: ChatDataEntry, accounts: list[T]) -> list[T]:
+def filter_accounts(
+    chat_data: ChatDataEntry, accounts: Sequence[AccountDto]
+) -> Sequence[AccountDto]:
     return [account for account in accounts if check_account(chat_data, account)]
 
 
-def check_account(chat_data: ChatDataEntry, account: AccountDto | DatabaseAccountDto):
+def check_account(chat_data: ChatDataEntry, account: AccountDto):
     return (
         check_status(account)
         and check_bad(account, chat_data)
@@ -23,7 +21,7 @@ def check_account(chat_data: ChatDataEntry, account: AccountDto | DatabaseAccoun
     )
 
 
-def check_cooldown(account: AccountDto | DatabaseAccountDto, chat_data: ChatDataEntry):
+def check_cooldown(account: AccountDto, chat_data: ChatDataEntry):
     current_time = time.time()
     db_id = str(account.get_id())
 
@@ -33,10 +31,10 @@ def check_cooldown(account: AccountDto | DatabaseAccountDto, chat_data: ChatData
     )
 
 
-def check_bad(account: AccountDto | DatabaseAccountDto, chat_data: ChatDataEntry):
+def check_bad(account: AccountDto, chat_data: ChatDataEntry):
     dbId = str(account.get_id())
     return not dbId in chat_data["bad"]
 
 
-def check_status(account: AccountDto | DatabaseAccountDto):
+def check_status(account: AccountDto):
     return account.is_kyc_allowed()

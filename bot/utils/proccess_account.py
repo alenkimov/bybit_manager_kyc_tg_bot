@@ -1,7 +1,7 @@
 from bot.api.account_info import account_info
 from aiogram import types
 from bot.utils.get_data import get_data
-from bot.messages.message_parser import stringify_notallow_message, stringify_message
+from bot.messages.message_parser import stringify_message
 from bot.api.account_link import account_sumsub_url
 from bot.api.mark_bad import mark_bad
 import bot.keyboards as keyboards
@@ -38,7 +38,7 @@ async def process_account(callback_query: types.CallbackQuery, update_link=False
 
         if status not in {"ALLOW", "FAILED_AND_CAN_RETRY"}:
             await message.edit_text(
-                stringify_notallow_message(account),
+                stringify_message(account),
             )
             return
 
@@ -80,5 +80,5 @@ async def proccess_bad(callback_query: types.CallbackQuery):
     mark_bad(db_id, chat_id=chat_id)  # Сохраняем
 
     await message.edit_text(
-        stringify_notallow_message(account),
+        stringify_message(account),
     )

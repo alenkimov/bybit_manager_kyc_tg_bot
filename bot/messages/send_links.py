@@ -12,7 +12,6 @@ from bot.api.account_info import account_info
 from bot.api.account_link import account_sumsub_url
 from .start_message import send_start_message
 from .message_parser import stringify_message
-from .message_parser import stringify_notallow_message
 from .loading_message import send_loading_message
 import bot.keyboards as keyboards
 
@@ -46,17 +45,18 @@ async def send_links(msg: types.Message, state: FSMContext):
 
                 updated_account = account_info(account.get_id())
 
-                if not updated_account.is_kyc_allowed():
-                    await msg.answer(stringify_notallow_message(updated_account))
-                    continue
-
-                sumsub_url = account_sumsub_url(account.get_id())
-                chat_data["accounts"][str(account.get_id())]["link"] = sumsub_url
-                chat_data["delayed"][str(account.get_id())] = time.time()
+                if updated_account.is_kyc_allowed():
+                    sumsub_url = account_sumsub_url(account.get_id())
+                    chat_data["accounts"][str(account.get_id())]["link"] = sumsub_url
+                    chat_data["delayed"][str(account.get_id())] = time.time()
 
                 await msg.answer(
-                    stringify_message(updated_account, sumsub_url),
-                    reply_markup=keyboards.create_link_keyboard(account.get_id()),
+                    stringify_message(account, sumsub_url),
+                    reply_markup=(
+                        keyboards.create_link_keyboard(account.get_id())
+                        if updated_account.is_kyc_allowed()
+                        else None
+                    ),
                 )
 
         except Exception as e:

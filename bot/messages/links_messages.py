@@ -1,7 +1,8 @@
+from typing import Sequence
+
 from aiogram import types
 from aiogram.fsm.context import FSMContext
 
-from api_client.dto.database_account_dto import DatabaseAccountDto
 from api_client.dto.account_dto import AccountDto
 
 from bot.utils.get_accounts_by_provider import get_accounts_by_provider
@@ -19,7 +20,7 @@ async def handle_no_accounts(msg: types.Message):
     await send_start_message(msg)
 
 
-def update_accounts_data(chat_data: ChatDataEntry, accounts: list[DatabaseAccountDto]):
+def update_accounts_data(chat_data: ChatDataEntry, accounts: Sequence[AccountDto]):
     # chat_data["accounts"] = {}  # Очищение памяти
     for account in accounts:
         db_id = str(account.get_id())

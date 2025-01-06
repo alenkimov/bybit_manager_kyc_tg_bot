@@ -1,13 +1,13 @@
 from typing import TypedDict
 
-from api_client.dto.database_account_dto import DatabaseAccountDto
+from api_client.dto.account_dto import AccountDto
 from api_client.dto.sumsub_url_dto import SumsubUrlDto
 
 chat_data = {}
 
 
 class AccountData(TypedDict):
-    account: DatabaseAccountDto
+    account: AccountDto
     link: SumsubUrlDto | None
 
 
