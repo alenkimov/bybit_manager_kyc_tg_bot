@@ -11,6 +11,10 @@ ENDPOINTS = {
     "sumsub_link": "private/{database_id}/sumsub_kyc_url",
 }
 
+# A client with a 60s timeout for connecting, and a 10s timeout elsewhere.
+timeout = httpx.Timeout(10.0, connect=60.0)
+client = httpx.Client(timeout=timeout)
+
 
 def get_endpoint(key, **kwargs):
     endpoint = ENDPOINTS.get(key)
@@ -24,7 +28,7 @@ class APIClient:
         self.base_url = base_url or BASE_URL
 
     def _request(self, method: str, url: str, **kwargs) -> str | dict | list:
-        response = httpx.request(method, url, **kwargs)
+        response = client.request(method, url, **kwargs)
         if response.status_code != httpx.codes.OK:
             raise Exception(f"API Error: {response.status_code}, {response.text}")
 

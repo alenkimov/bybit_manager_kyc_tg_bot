@@ -59,11 +59,11 @@ async def send_links(msg: types.Message, state: FSMContext):
                     ),
                 )
 
-        except Exception as e:
-            await msg.answer(
-                f"Error while generating links. Contact your admin or try again.\n\n Detailed Error: {e}",
-            )
-            await send_start_message(msg)
+        # except Exception as e:
+        #     await msg.answer(
+        #         f"Error while generating links. Contact your admin or try again.\n\n Detailed Error: {e}",
+        #     )
+        #     await send_start_message(msg)
 
         finally:
             await delete_loading_message()
